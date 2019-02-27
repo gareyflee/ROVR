@@ -1,0 +1,45 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <article>
+        <img src="resources/Hardware_Diagram.svg" style="width:49%; margin: auto;" />
+        <img src="resources/Software_Diagram.svg" style="width:49%; margin: auto;" />
+        <h1>Parts ordered</h1>
+        <p>2018-02-19</p>
+        <p>This week, we designed system block diagrams and ordered the additional parts we'll need for the lab. Finding
+            an ADC with which we could interface was a significant challenge, as many ADCs within our budget wouldn't
+            support signal multiplexing or had an insufficient sampling rate for picking up even deep male voices.</p>
+        <p>Using the <a href="https://www.audacityteam.org/">Audacity</a> sound editing software, we tested the
+            recoverable signals according to the nyquist rate of the ADCs we considered, eventually settling on the <a
+                href="https://www.adafruit.com/product/1083">Adafruit ADS1015</a>, a 12-bit 4-channel multiplexing ADC
+            with programmable gain. We also chose Adafruit for our microphones, taking advantage of the <a
+                href="https://www.amazon.com/Adafruit-Electret-Microphone-Amplifier-MAX9814/dp/B00SLYAI9K/ref=sr_1_1_sspa?ie=UTF8&qid=1550635698&sr=8-1-spons&keywords=electret+microphone&psc=1&smid=AM0JQO74J587C">Adafruit
+                MAX9814</a> for its easy pin access, mountable pcb form-factor, and the ability to disable its automatic
+            gain control.</p>
+        <p>We also considered motors with reasonable gearing ratios for our project, eventually settling on the <a
+                href="https://www.amazon.com/Yosoo-Reduction-300RPM-Gearbox-Replacement/dp/B01BBSXDJ4/ref=sr_1_1_sspa?ie=UTF8&qid=1550635020&sr=8-1-spons&keywords=yosoo%2Bmini%2Bspeed%2Breduction%2Bmotor&th=1">Yosoo
+                Mini DC 6V Speed Reduction Motor</a> for providing 300RPM as its max speed via a built-on gearbox. A low
+            base RPM was important, as constructing a new motor gearbox was outside the scope of this project. We also
+            decided on a brushed DC motor rather than a stepped motor to simplify the otherwise complex PWM operations
+            necessary to provide power to the motor. </p>
+        <p>Finally, we identified some H-bridges from our existing parts that could be used to give high-current power
+            to the motors while still controlling the motors LPC4088 built-in PWM module.</p>
+    </article>
+    <article>
+        <div style="height:23vw;overflow:hidden;">
+            <img src="resources/ProposalHead.png" style="width: 100%; filter: blur(3px);-webkit-filter: blur(3px);" />
+        </div>
+
+        <h1>Project proposed!</h1>
+        <p>2018-02-14</p>
+        <p>Welcome to the ROVR project homepage! The ROVR project is a toy student project to explore the limits of
+            software digital signal processing on the LPC4088 developer's kit.</p>
+        <p>You can download the project proposal <a href="resources/GKM_ECE153B_Project_Proposal.pdf">here</a>.</p>
+    </article>
+</body>
+
+</html>
