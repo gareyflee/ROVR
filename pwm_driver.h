@@ -6,6 +6,8 @@
  * All rights reserved.
  */
 
+// See https://www.nxp.com/docs/en/user-guide/UM10562.pdf
+
 #ifndef __PWM_DRIVER_H_
 #define __PWM_DRIVER_H_
 
