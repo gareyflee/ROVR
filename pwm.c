@@ -1,6 +1,10 @@
 #include <stdint.h>
 
+#include "pwm_driver.h"
+
+
 void initialize_pwm(){
+	//PWM "Timer" selector: LPC_MCPWM
 
 }
 
