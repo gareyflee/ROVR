@@ -1,6 +1,9 @@
+#include "Chip.h"
+
 #define TIMER0_IRQ_HANDLER				TIMER0_IRQHandler  
 #define TIMER0_INTERRUPT_NVIC_NAME			TIMER0_IRQn      
 #define TIMER_0_MATCH					100
+#define TIMER0_PRESCALE_VALUE 12000	// Clock cycle / 10000 (set to 1/10 ms increments)
 
 #define TRUE						1
 #define FALSE						0
@@ -16,7 +19,7 @@ void TIMER0_IRQHandler(void){
 void Initialize_Timers(){
 	// Initialize Timer0
 	Chip_TIMER_Init(LPC_TIMER0);
-	Chip_TIMER_PrescaleSet(LPC_TIMER0,PRESCALE_VALUE_0);
+	Chip_TIMER_PrescaleSet(LPC_TIMER0,TIMER0_PRESCALE_VALUE);
 	Chip_TIMER_SetMatch(LPC_TIMER0,0,TIMER_0_MATCH);
 	Chip_TIMER_MatchEnableInt(LPC_TIMER0, 0);
   
