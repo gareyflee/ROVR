@@ -6,6 +6,23 @@
 
 <body>
     <article>
+        <img src="resources/FIXME.jpg" style="width: 100%; filter: blur(2px);-webkit-filter: blur(2px);" />
+        <h1>Programming weekend</h1>
+        <p>2018-03-02</p>
+        <p>Our programming group met Saturday this week to go over PWM specs and to test our motors. The motors were
+            more powerful than we expected, a pleasant surprise. They also drew a low enough current that we could begin
+            considering driving them directly from the LPC4088 pins. Debate as to the safety of such a setup for our
+            development board is ongoing.</p>
+        <p>This weekend's major challenge came in the form of a tiny FIXME message. Astoundingly, the LPC4088 developer
+            board drivers provided for ECE 153B students does not have drivers for the PWM modules. This immediately
+            stymied our progress toward writing a simple interface for our particular use case. We sepnt some three
+            hours pouring over datasheets and, eventually, located the PWM memory region layout and output pins. While
+            based off the standard Timer blocks, the PWM blocks had some subtle differences (like removal of the
+            External Capture Register) that made directly adapting the Timer drivers difficult. Currently, our group is
+            carefully weighing the interrupt cost of handling PWM through a basic timer block and interrupts, versus the
+            development cost of writing our own drivers to use the PWM blocks.</p>
+    </article>
+    <article>
         <img src="resources/VectorUtil.png" style="width: 100%; filter: blur(4px);-webkit-filter: blur(4px);" />
         <h1>Programming begun</h1>
         <p>2018-02-26</p>
