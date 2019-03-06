@@ -59,8 +59,8 @@ void Initialize_PWM(){
 	Chip_TIMER_Init(LPC_TIMER0);								// Initialize TIMER0
 	Chip_TIMER_PrescaleSet(LPC_TIMER0,TIMER0_PRESCALE_VALUE);	// Set prescale value
 	Chip_TIMER_SetMatch(LPC_TIMER0,0,MY_TIME_EFFECT);			// Set match value
-	Chip_TIMER_SetMatch(LPC_TIMER0,1,MY_TIME_EFFECT>>1);		// Set match value
-	Chip_TIMER_SetMatch(LPC_TIMER0,2,MY_TIME_EFFECT>>1);		// Set match value
+	Chip_TIMER_SetMatch(LPC_TIMER0,1,0);						// Set match value
+	Chip_TIMER_SetMatch(LPC_TIMER0,2,0);						// Set match value
 	Chip_TIMER_MatchEnableInt(LPC_TIMER0, 0);					// Configure to trigger interrupt on match
 	Chip_TIMER_ResetOnMatchEnable(LPC_TIMER0, 0);				// Configure to reset timer on match
 	Chip_TIMER_MatchEnableInt(LPC_TIMER0, 1);					// Configure to trigger interrupt on match
@@ -74,7 +74,16 @@ void PWM_Enable(){
 	Chip_TIMER_Enable(LPC_TIMER0);  // Start TIMER0
 }
 
+void PWM_Disable(){
+	Chip_TIMER_Disable(LPC_TIMER0);
+}
 
-void set_pwm(uint16_t pwm_val){
 
+void set_pwm(uint8_t PWM_ID,uint8_t pwm_val){
+	const uint8_t match = PWM_ID + 1;
+	if(match == 1 || match == 2){
+		Chip_TIMER_SetMatch(LPC_TIMER0,match,pwm_val);
+	}else{
+		//If you get here, your're fucked.
+	}
 }

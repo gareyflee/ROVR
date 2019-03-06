@@ -10,13 +10,13 @@
 
 #define TIMER0_PRESCALE_VALUE 12000	// Clock cycle / 10000 (set to 1/10 ms increments)
 
-#define MY_TIME_EFFECT 100
+#define MY_TIME_EFFECT 256
 
-#define PWM_0_PIN 10
 #define PWM_0_PORT 2
+#define PWM_0_PIN 14
 
-#define PWM_1_PIN 26
 #define PWM_1_PORT 2
+#define PWM_1_PIN 26
 
 /*****************************************************************************
  * Public types/enumerations/variables
@@ -40,7 +40,9 @@ void Initialize_PWM();
 
 void PWM_Enable();
 
+void PWM_Disable();
 
-void set_pwm(uint16_t pwm_val);
+
+void set_pwm(uint8_t PWM_ID,uint8_t pwm_val);
 
 #endif //PWM_C
