@@ -4,4 +4,39 @@ article{
     margin: auto;
     padding: 10px;
     box-sizing: border-box;
+    counter-reset: footnotes;
+}
+
+a[aria-describedby="footnote-label"]{
+    counter-increment: footnotes;
+    text-decoration: none;
+    color: inherit;
+    cursor: default;
+    outline: none;
+}
+
+a[aria-describedby="footnote-label"]::after {
+  content: '[' counter(footnotes) ']'; /* 1 */
+  vertical-align: super; /* 2 */
+  font-size: 0.5em; /* 3 */
+  margin-left: 2px; /* 4 */
+  color: blue; /* 5 */
+  text-decoration: underline; /* 5 */
+  cursor: pointer; /* 5 */
+}
+
+footer :target {
+  background: yellow;
+}
+
+.box{
+    border: 1px solid black;
+    display: block;
+    width: 66%;
+    margin: auto;
+    box-sizing: border-box;
+}
+
+nav>a{
+    padding:20px;
 }

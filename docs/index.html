@@ -5,6 +5,39 @@
 </head>
 
 <body>
+    <a href="index.html">
+        <h1 style="text-align:center">ECE153B W19 ROVR Project</h1>
+    </a>
+    <nav class="box" style="text-align:center"><a href="about.html">About</a><a href="team.html">Team</a></nav>
+    <article>
+        <div style="height:14vw;overflow:hidden;">
+            <img src="resources/GPIO_Map.png" style="width: 100%; filter: blur(2px);-webkit-filter: blur(2px);" />
+        </div>
+        <h1>Parts Experimentation</h1>
+        <p>2018-03-06</p>
+        <p>This week was parts interface week. We hooked up our motors through the <a
+                href="https://www.newegg.com/Product/Product.aspx?Item=9SIAAZM4DF5385">L298N Dual H-bridge for
+                Arduino</a> package (part number ASMMR in the ECE shop) and provided 5V supply from the lab bench power
+            supply, then controlled the H-bridge with a PWM signal. It worked! Unfortunately, only one of our first
+            selected GPIO pins worked. After further testing, we discovered that the vast majority of the GPIO pins on
+            our LPC4088 developer's kit were not responding, even after we ensured the IO-Configuration Register
+            (IOCONN) had been configured to set each of those pins in GPIO output mode. Thankfully, with trial-and-error
+            testing, we found six pins that were viable for timer-based GPIO PWM.</p>
+        <p>During the trial-and-error testing, we also began to import <a href="#I2C"
+                aria-describedby="footnote-label">I<sup>2</sup>C</a> behavior from our lab2 code, for interfacing
+            with the <a href="https://www.adafruit.com/product/1083">Adafruit ADS1015</a> 12-bit multiplexing ADC.</p>
+        <p>Finally, we also disabled automatic gain on our <a
+                href="https://www.amazon.com/Adafruit-Electret-Microphone-Amplifier-MAX9814/dp/B00SLYAI9K/ref=sr_1_1_sspa?ie=UTF8&qid=1550635698&sr=8-1-spons&keywords=electret+microphone&psc=1&smid=AM0JQO74J587C">Adafruit
+                MAX9814</a> microphones and measured their performance on an oscilloscope. We got some good near-sine
+            waves with whistling and humming and some good noise from holding consonants; that appeared to be working
+            well.</p>
+        <footer>
+            <ol>
+                <li id="I2C">I<sup>2</sup>C was formerly a trademark of NXP semiconductors.</li>
+            </ol>
+        </footer>
+
+    </article>
     <article>
         <img src="resources/FIXME.jpg" style="width: 100%; filter: blur(2px);-webkit-filter: blur(2px);" />
         <h1>Programming weekend</h1>
