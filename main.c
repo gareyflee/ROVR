@@ -2,6 +2,8 @@
 #include "board.h"
 #include "chip.h"
 
+#include "pwm.h"
+
 /**
  * @brief Runs board init functions included in every project
  */
@@ -12,7 +14,14 @@ void Initialize_Board(){
 
 int main(){
 	Initialize_Board();
-	printf("Garey Rules\n\n");
+	Initialize_PWM();
+
+	printf("Garey rulez");
+
+	PWM_Enable();
+
+	while(1)
+		__WFI();
 
 	return 0;
 }

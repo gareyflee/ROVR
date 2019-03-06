@@ -1,5 +1,7 @@
 #include "Chip.h"
 
+#if false
+
 #define TIMER0_IRQ_HANDLER				TIMER0_IRQHandler  
 #define TIMER0_INTERRUPT_NVIC_NAME			TIMER0_IRQn      
 #define TIMER_0_MATCH					100
@@ -29,3 +31,4 @@ void Initialize_Timers(){
 	NVIC_EnableIRQ(TIMER0_INTERRUPT_NVIC_NAME);
 }
   
+#endif /* Why does this code exist? In my way! */
