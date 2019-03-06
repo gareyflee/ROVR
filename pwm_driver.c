@@ -29,6 +29,8 @@
  * this code.
  */
 
+#if false
+
 #include "chip.h"
 #include "pwm_driver.h"
 
@@ -94,3 +96,5 @@ void Chip_PWM_Reset(PWM_T *pTMR)
 	/* Restore PWM state */
 	pTMR->TCR = reg;
 }
+
+#endif /* Disable broken code */

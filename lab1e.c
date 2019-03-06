@@ -1,6 +1,8 @@
 //	ECE 153B W18 Lab 1E
 //	Configuring ADCs
 
+#if false
+
 #include "board.h"
 
 /*****************************************************************************
@@ -145,3 +147,5 @@ int main(void)
 
 	return 0;
 }
+
+#endif /* Disable unused code */

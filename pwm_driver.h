@@ -6,6 +6,8 @@
  * All rights reserved.
  */
 
+#if false
+
 // See https://www.nxp.com/docs/en/user-guide/UM10562.pdf
 
 #ifndef __PWM_DRIVER_H_
@@ -425,3 +427,5 @@ void Chip_PWM_PWM_SetCountClockSrc(PWM_T *pTMR,
 #endif
 
 #endif /* __PWM_DRIVER_H_ */
+
+#endif /* Disable broken code */
