@@ -59,8 +59,8 @@ void Initialize_PWM(){
 	Chip_TIMER_Init(LPC_TIMER0);								// Initialize TIMER0
 	Chip_TIMER_PrescaleSet(LPC_TIMER0,TIMER0_PRESCALE_VALUE);	// Set prescale value
 	Chip_TIMER_SetMatch(LPC_TIMER0,0,MY_TIME_EFFECT);			// Set match value
-	Chip_TIMER_SetMatch(LPC_TIMER0,1,0);						// Set match value
-	Chip_TIMER_SetMatch(LPC_TIMER0,2,0);						// Set match value
+	Chip_TIMER_SetMatch(LPC_TIMER0,1,0);						// Set match value to 0
+	Chip_TIMER_SetMatch(LPC_TIMER0,2,0);						// Set match value to 0
 	Chip_TIMER_MatchEnableInt(LPC_TIMER0, 0);					// Configure to trigger interrupt on match
 	Chip_TIMER_ResetOnMatchEnable(LPC_TIMER0, 0);				// Configure to reset timer on match
 	Chip_TIMER_MatchEnableInt(LPC_TIMER0, 1);					// Configure to trigger interrupt on match
