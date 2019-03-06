@@ -1,3 +1,6 @@
+#include "board.h"
+#include "chip.h"
+
 #define I2C_SPEED 3300
 
 static uint8_t i2c_buffer[256];
@@ -12,7 +15,7 @@ void initialize(){
     NVIC_EnableIRQ(I2C0_IRQn);
 
 }
-
+#if false // This code is breaking my build. Don't check in not-building code!
 void write(int address, int data){
     // Do stuff
     xfer->slaveAddr = tmp;
@@ -24,6 +27,7 @@ void write(int address, int data){
 		xfer->txBuff = data;
     Chip_I2C_MasterSend(I2C0, xfer.slaveAddr, xfer.txBuff, xfer.txSz);
 }
+#endif
 
 void Change_MIC(int mux_num){
   
@@ -31,19 +35,21 @@ void Change_MIC(int mux_num){
 }
 
 int read(int address){
-    int data;
-    int num_bytes_read;
+    //int data;
+    // Delete your unused variables
 
     xfer.slaveAddr = 	0x48;
     xfer.rxBuff = 		0x00;
     xfer.txBuff = 		0x00;
     xfer.txSz = 		0x00;
     xfer.rxSz = 		0x02;
-    xfer.rxBuff = &i2c_buffer;
+    xfer.rxBuff = i2c_buffer;
+
 
     Chip_I2C_MasterRead(I2C0, xfer.slaveAddr, xfer.rxBuff, xfer.rxSz);
 
-    return data;
+    //return data; // "data" is uninitialized. What does this code even do???
+    return 0;
 }
 static void i2c_state_handling(I2C_ID_T id)
 {
