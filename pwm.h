@@ -13,10 +13,10 @@
 #define MY_TIME_EFFECT 256
 
 #define PWM_0_PORT 2
-#define PWM_0_PIN 14
+#define PWM_0_PIN 11
 
 #define PWM_1_PORT 2
-#define PWM_1_PIN 26
+#define PWM_1_PIN 13
 
 /*****************************************************************************
  * Public types/enumerations/variables
