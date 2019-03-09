@@ -18,6 +18,10 @@ int main(){
 
 	printf("Garey rulez");
 
+	set_motor(0,64,true);
+	set_motor(1,64,true);
+	Motor_Enable();
+
 	while(1)
 		__WFI();
 
