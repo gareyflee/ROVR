@@ -10,6 +10,22 @@
     </a>
     <nav class="box" style="text-align:center"><a href="about.html">About</a><a href="team.html">Team</a></nav>
     <article>
+        <img src="resources/MotorIm.jpg"
+            style="display:block;width:40%;margin:auto;filter: blur(2px);-webkit-filter: blur(2px);" />
+        <h1>Performant Motors</h1>
+        <p>2018-03-09</p>
+        <p>We had another weekend meeting, this time to finish code for running our motors forward and in reverse.</p>
+        <p>During this testing, we made a couple mistakes. We...</p>
+        <ul>
+            <li>Forgot to have a common ground for the circuit</li>
+            <li>Forgot to change pin numbers in the code to match our GPIO map</li>
+            <li>Forgot to change PWM width from our previous testing to make sure we ran the right program</li>
+            <li>Forgot to check the code for reverse motor operation</li>
+        </ul>
+        <p>Testing pins with an oscilloscope, we located the first two and corrected them. The motors turned at a speed
+            proportional to the PWM duty cycle, so we assume our code works well enough.</p>
+    </article>
+    <article>
         <div style="height:14vw;overflow:hidden;">
             <img src="resources/GPIO_Map.png" style="width: 100%; filter: blur(2px);-webkit-filter: blur(2px);" />
         </div>
