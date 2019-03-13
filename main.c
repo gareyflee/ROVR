@@ -36,7 +36,9 @@ int main(){
 		for (int i = 0; i < num_samples; i ++)
 			sample_avg += float(Sample_Data[i]);
 		sample_avg /= num_samples;
-		printf("Avg for mic num %i is: %d\r\n", mux_num, sample_avg); 	
+		printf("Avg for mic num %i is: %d\r\n", mux_num, sample_avg); 
+		while(!ADC_Read_Complete())
+			__WFI();
 	}
 	
 	
