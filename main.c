@@ -27,21 +27,25 @@ int main(){
 	uint8_t mux_num = 0;
 	uint8_t num_samples  = 512;
 	float sample_avg;
+	uint8_t isDone = 0;
+	uint8_t bytes_processed = 0;
 	
-	
-	while (True){
-		sample_avg = 0.0;
+	while(True){
 		Config_ADC(mux_num);
+		bytes_processed = 0;
+		sample_avg = 0.0;
 		Sample_Data = Read_ADC(num_samples);
-		for (int i = 0; i < num_samples; i ++)
-			sample_avg += float(Sample_Data[i]);
+		while(bytes_processed < num_samples){
+			if (ADC_Bytes_Read() > bytes_processed){
+				sample_avg += float(Sample_Data[bytes_processed++]);			
+			}
+			else{
+				__WFI();	
+			}
+		}
 		sample_avg /= num_samples;
-		printf("Avg for mic num %i is: %d\r\n", mux_num, sample_avg); 
-		while(!ADC_Read_Complete())
-			__WFI();
+		printf("Avg for mic num %i is: %d\r\n", mux_num, sample_avg);
 	}
-	
-	
-	
+		
 	return 0;
 }
