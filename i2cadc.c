@@ -3,6 +3,19 @@
 static uint8_t i2c_tx_buffer[ADC_CONFIG_LEN];
 static uint8_t i2c_rx_buffer[MAX_ADC_SAMP_BUFF];
 
+static volatile uint8_t ADC_bytes_read = 0;
+static uint8_t ADC_bytes_to_read = 0;
+
+void ADC_IRQ_HANDLER(){
+	Chip_I2C_MasterRead(I2C0, I2C_ADC_ADDR, i2c_rx_buffer+ADC_bytes_read, 1);
+	++ADC_bytes_read;
+	if(ADC_bytes_read==ADC_bytes_to_read)
+		Chip_TIMER_Disable(ADC_READ_TIMER);
+
+	NVIC_ClearPendingIRQ(ADC_IRQ_NVIC_NAME);
+	Chip_TIMER_ClearMatch(ADC_READ_TIMER,0);
+}
+
 void Initialize_I2C(){
     // Initialize I2C
     Board_I2C_Init(I2C0);
@@ -15,7 +28,11 @@ void Initialize_I2C(){
     Chip_TIMER_Init(ADC_READ_TIMER); 							// Initialize ADC_READ_TIMER
 	Chip_TIMER_PrescaleSet(ADC_READ_TIMER,ADC_TIMER_PRESCALE);	// Set prescale value
 	Chip_TIMER_SetMatch(ADC_READ_TIMER,0,ADC_READ_PERIOD);		// Set ADC timer match
+	Chip_TIMER_MatchEnableInt(ADC_READ_TIMER, 0);
 	Chip_TIMER_ResetOnMatchEnable(ADC_READ_TIMER,0);			// Enable Reset on match hit
+
+	NVIC_ClearPendingIRQ(ADC_IRQ_NVIC_NAME);
+	NVIC_EnableIRQ(ADC_IRQ_NVIC_NAME);
 }
 
 
@@ -67,24 +84,22 @@ void Config_ADC(uint8_t mux){
 uint8_t* Read_ADC(uint16_t samples){
 	const uint8_t conversion_register_pointer = 0b00000000;
 
+	ADC_bytes_to_read = samples;
+
 	Chip_I2C_MasterCmdRead(I2C0, I2C_ADC_ADDR, conversion_register_pointer, i2c_rx_buffer, 1);
+	ADC_bytes_read = 1;
 
 
 	Chip_TIMER_Reset(ADC_READ_TIMER);
 	Chip_TIMER_Enable(ADC_READ_TIMER);
+}
 
-//	//I haven't the brainpower to make this work right now.
-//	bool unread = false;
-//	uint16_t i;
-//	for(i=1;i<samples;++i){
-//		while(Chip_TIMER_Read(ADC_READ_TIMER)>3){}
-//		if(unread){
-//			Chip_I2C_MasterRead(I2C0, I2C_ADC_ADDR, i2c_rx_buffer+i, 1);
-//			unread = false;
-//		}
-//	}
 
-	Chip_TIMER_Disable(ADC_READ_TIMER);
+uint8_t ADC_Read_Complete(){
+	return ADC_bytes_read==ADC_bytes_to_read;
+}
 
-	return i2c_rx_buffer;
+
+uint8_t ADC_Bytes_Read(){
+	return ADC_bytes_read;
 }

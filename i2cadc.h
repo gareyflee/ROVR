@@ -12,8 +12,8 @@
 #define ADC_READ_TIMER 		LPC_TIMER1
 #define ADC_PRESCALE_VALUE	12000		// Clock cycle / 10000 (set to 1/10 ms increments)
 #define ADC_READ_PERIOD		3033 		// In microseconds/10
-#define ADC_IRQ_HANDLER		TIMER0_IRQHandler
-#define ADC_IRQ_NVIC_NAME	TIMER0_IRQn
+#define ADC_IRQ_HANDLER		TIMER1_IRQHandler
+#define ADC_IRQ_NVIC_NAME	TIMER1_IRQn
 
 #define MAX_ADC_SAMP_BUFF 512
 
