@@ -13,6 +13,8 @@
 #define ADC_TIMER_PRESCALE	1200 		// Clock cycle / 1000 (set to 1 microsecond increments)
 #define ADC_READ_PERIOD		303 		// In microseconds
 
+volatile extern uint8_t ADC_isRead = False;
+
 /**
  * @brief Sets up I2C0 and ADC_READ_TIMER for adc operation
  */
