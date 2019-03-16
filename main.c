@@ -16,7 +16,7 @@ int main(){
 	Initialize_Board();
 	Initialize_Motor();
 	Initialize_I2CADC();
-	printf("Garey rocks my socks");
+	printf("Garey suxx");
 
 	set_motor(0,64,true);
 	set_motor(1,64,true);
