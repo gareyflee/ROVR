@@ -104,6 +104,7 @@ uint8_t* Read_ADC(uint16_t samples){
 	ADC_bytes_to_read = samples;
 
 	Chip_I2C_MasterCmdRead(I2C0, I2C_ADC_ADDR, conversion_register_pointer, i2c_rx_buffer, 1);
+	*i2c_rx_buffer -= 78; // Change if we change PGA
 	ADC_bytes_read = 1;
 
 
@@ -118,9 +119,10 @@ void ADC_Read_Step(){
 		ADC_read_flag = 0;
 
 		int read = Chip_I2C_MasterRead(I2C0, I2C_ADC_ADDR, i2c_rx_buffer+ADC_bytes_read, 1);
-		if(read)
+		if(read){
+			i2c_rx_buffer[ADC_bytes_read] -= 78; // Change if we change PGA
 			++ADC_bytes_read;
-		else
+		}else
 			Board_LED_Set(0,1);
 
 		if(ADC_bytes_read>=ADC_bytes_to_read)
