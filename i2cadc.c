@@ -8,8 +8,6 @@ static uint8_t ADC_read_flag = 0;
 static uint16_t ADC_bytes_read = 0;
 static uint16_t ADC_bytes_to_read = 0;
 
-static unsigned debug_count[] = {0,0};
-
 /**
  * @brief	I2C0 Interrupt handler
  * @return	None
@@ -17,13 +15,10 @@ static unsigned debug_count[] = {0,0};
 void I2C0_IRQHandler(void)
 {
 	Chip_I2C_MasterStateHandler(I2C0);
-	++debug_count[0];
 }
 
 void ADC_IRQ_HANDLER(){
 	ADC_read_flag = 1;
-
-	++debug_count[1];
 
 	Chip_TIMER_ClearMatch(ADC_READ_TIMER,0);
 	NVIC_ClearPendingIRQ(ADC_IRQ_NVIC_NAME);
@@ -138,8 +133,4 @@ uint8_t ADC_Read_Complete(){
 
 uint16_t ADC_Bytes_Read(){
 	return ADC_bytes_read;
-}
-
-unsigned* ADC_debug_dat(){
-	return debug_count;
 }
