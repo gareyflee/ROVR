@@ -103,7 +103,7 @@ int8_t* Read_ADC(uint16_t samples){
 
 	ADC_bytes_to_read = samples;
 
-	Chip_I2C_MasterCmdRead(I2C0, I2C_ADC_ADDR, (uint8_t*)(conversion_register_pointer), i2c_rx_buffer, 1);
+	Chip_I2C_MasterCmdRead(I2C0, I2C_ADC_ADDR, conversion_register_pointer, (uint8_t*)(i2c_rx_buffer), 1);
 	*i2c_rx_buffer -= 78; // Remove offset
 	ADC_bytes_read = 1;
 
