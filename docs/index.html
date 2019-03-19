@@ -10,10 +10,29 @@
     </a>
     <nav class="box" style="text-align:center"><a href="about.html">About</a><a href="team.html">Team</a></nav>
     <article>
+        <img src="resources/Mount.jpg" style="width:100%;" />
+        <h1>Performant Averaging</h1>
+        <p>2019-03-16</p>
+        <p>Today we completed I2C read code for two microphones and began writing code to average their output data.
+            While values returned were proportional to the volume we fed into the microphone, we noticed significant
+            echo pickup from the environment that threw off attempts to determine signal directionality in the
+            two-microphone case. We hope this will not become a significant problem in the four-microphone case, but to
+            help mitigate it we are developing a backboard for the microphone mounts to ensure they pickup fully only
+            sounds incident on their facing direction. We are also nearing completion of the 3D-printed board mount, the
+            plastic and print time for which were helpfully provided by Toyon Industries. Thanks Toyon!</p>
+    </article>
+    <article>
+        <h1>Performing I2C</h1>
+        <p>2019-03-12</p>
+        <p>This lab session explored wiring the ADC and mics, powering the ADC and mics, and getting our first I2C
+            communication with the ADC. We saw good microphone output on oscilloscopes and got valid bytes back from the
+            ADC. Our next steps are completion of the mounting board and ADC I2C handling code.</p>
+    </article>
+    <article>
         <img src="resources/MotorIm.jpg"
             style="display:block;width:40%;margin:auto;filter: blur(2px);-webkit-filter: blur(2px);" />
         <h1>Performant Motors</h1>
-        <p>2018-03-09</p>
+        <p>2019-03-09</p>
         <p>We had another weekend meeting, this time to finish code for running our motors forward and in reverse.</p>
         <p>During this testing, we made a couple mistakes. We...</p>
         <ul>
@@ -30,7 +49,7 @@
             <img src="resources/GPIO_Map.png" style="width: 100%; filter: blur(2px);-webkit-filter: blur(2px);" />
         </div>
         <h1>Parts Experimentation</h1>
-        <p>2018-03-06</p>
+        <p>2019-03-06</p>
         <p>This week was parts interface week. We hooked up our motors through the <a
                 href="https://www.newegg.com/Product/Product.aspx?Item=9SIAAZM4DF5385">L298N Dual H-bridge for
                 Arduino</a> package (part number ASMMR in the ECE shop) and provided 5V supply from the lab bench power
@@ -57,7 +76,7 @@
     <article>
         <img src="resources/FIXME.jpg" style="width: 100%; filter: blur(2px);-webkit-filter: blur(2px);" />
         <h1>Programming weekend</h1>
-        <p>2018-03-02</p>
+        <p>2019-03-02</p>
         <p>Our programming group met Saturday this week to go over PWM specs and to test our motors. The motors were
             more powerful than we expected, a pleasant surprise. They also drew a low enough current that we could begin
             considering driving them directly from the LPC4088 pins. Debate as to the safety of such a setup for our
@@ -74,7 +93,7 @@
     <article>
         <img src="resources/VectorUtil.png" style="width: 100%; filter: blur(4px);-webkit-filter: blur(4px);" />
         <h1>Programming begun</h1>
-        <p>2018-02-26</p>
+        <p>2019-02-26</p>
         <p>This week, waiting for the parts to arrive, we began to program utility classes and the general program
             structure for the ROVR LPC4088. We also completed deployment of our project website to GitHub Pages. The
             project code and website are published <a href="https://github.com/gareyflee/ROVR">here on GitHub</a> for
@@ -86,7 +105,7 @@
         <img src="resources/Hardware_Diagram.svg" style="width:49%; margin: auto;" />
         <img src="resources/Software_Diagram.svg" style="width:49%; margin: auto;" />
         <h1>Parts ordered</h1>
-        <p>2018-02-19</p>
+        <p>2019-02-19</p>
         <p>This week, we designed system block diagrams and ordered the additional parts we'll need for the lab. Finding
             an ADC with which we could interface was a significant challenge, as many ADCs within our budget wouldn't
             support signal multiplexing or had an insufficient sampling rate for picking up even deep male voices.</p>
