@@ -6,8 +6,19 @@
 #include "motor.h"
 
 
-#define NUM_SAMPLES 64
+#define MOTOR_SPEED 128
+#define SOUND_THRESH_FB 200.0
+#define SOUND_THRESH_LR 100.0
+#define MAX_LR_THRESH 500.0
 
+
+#define NUM_SAMPLES 64
+int WAIT_FB = 0;
+int WAIT_LR = 0;
+#define MAX_WAIT_TIME 512
+int MOTOR_DIR_LR = 0;
+
+#define Print_FB
 /**
  * @brief Runs board init functions included in every project
  */
@@ -54,30 +65,93 @@ static float vector_arr[2] = {0.0f,0.0f};
  */
 void vectorMath(const float* a){
 	vector_arr[0] = a[0]+a[3]-(a[1]+a[2]);
-	vector_arr[1] = a[0]+a[1]-(a[2]+a[3]);
+	vector_arr[1] = -1*(a[0]+a[1])+(a[2]+a[3]);
+
+	//vector_arr[0] = a[0]-a[2];
+	//vector_arr[1] = a[1]-a[3];
 	//return vector_differences;
 }
 
-#define MOTOR_SPEED 64
-#define SOUND_THRESH 125.0
+
 
 /**
  * @brief update the motor state with the current vector_arr data
  */
 void updateMotors(){
-	if(vector_arr[0] > SOUND_THRESH){
-		set_motor(0,MOTOR_SPEED,true);
-		set_motor(1,MOTOR_SPEED,true);
-	}else if(vector_arr[0] < -SOUND_THRESH){
-		set_motor(0,MOTOR_SPEED,false);
-		set_motor(1,MOTOR_SPEED,false);
-	}else{
+
+	//LEFT RIGHT VECTORS
+	if(vector_arr[1] > SOUND_THRESH_LR){
+		//set_motor(0,MOTOR_SPEED,true);
+		//set_motor(1,MOTOR_SPEED,true);
+//#ifndef Print_FB
+//		printf("L/R: %f\r\n", vector_arr[1]);
+//#endif
+		MOTOR_DIR_LR = (int)(MOTOR_SPEED/MAX_LR_THRESH*vector_arr[1]);
+	}
+	else if(vector_arr[1] < -SOUND_THRESH_LR){
+		//set_motor(0,MOTOR_SPEED,false);
+		//set_motor(1,MOTOR_SPEED,false);
+//#ifndef Print_FB
+//		printf("L/R: %f\r\n", vector_arr[1]);
+//#endif
+		MOTOR_DIR_LR = (int)(MOTOR_SPEED/MAX_LR_THRESH*vector_arr[1]);
+	}
+	else{
+		WAIT_LR++;
+	}
+
+
+	//SET MOTOR SPEED
+	uint8_t M0;
+	uint8_t M1;
+	if(MOTOR_DIR_LR<0){
+		M0 = MOTOR_SPEED;
+		M1 = MOTOR_SPEED-MOTOR_DIR_LR;
+	}
+	else if(MOTOR_DIR_LR>0){
+		M0 = MOTOR_SPEED+MOTOR_DIR_LR;
+		M1 = MOTOR_SPEED;
+	}
+	else{
+		M0 = MOTOR_SPEED;
+		M1 = MOTOR_SPEED;
+	}
+
+	//FORWARD BACKWARD VECTORS
+	if(vector_arr[0] > SOUND_THRESH_FB){
+		set_motor(0,M0,true);
+		set_motor(1,M1,true);
+//#ifdef Print_FB
+//		printf("F/B: %f\r\n", vector_arr[0]);
+//#endif
+	}
+	else if(vector_arr[0] < -SOUND_THRESH_FB){
+		set_motor(0,M0,false);
+		set_motor(1,M1,false);
+//#ifdef Print_FB
+//		printf("F/B: %f\r\n", vector_arr[0]);
+//#endif
+	}
+	else{
+		WAIT_FB++;
+	}
+
+
+	if(WAIT_FB > MAX_WAIT_TIME){
+		WAIT_FB = 0;
 		set_motor(0,0,true);
 		set_motor(1,0,true);
 	}
+	if(WAIT_LR > MAX_WAIT_TIME){
+		WAIT_LR = 0;
+		MOTOR_DIR_LR = 0;
+		//set_motor(0,0,true);
+		//set_motor(1,0,true);
+	}
+
 }
 
-//#define JUST_FORWARD_DEBUG
+// #define JUST_FORWARD_DEBUG
 
 int main(){
 	Initialize_Board();
@@ -86,7 +160,7 @@ int main(){
 	Initialize_I2CADC();
 
 
-	printf("ROVR initialized\r\n");
+	//printf("ROVR initialized\r\n");
 
 	updateMotors();
 	Motor_Enable();
@@ -107,8 +181,8 @@ int main(){
 		fc = true;
 	}
 #else // JUST_FORWARD_DEBUG
-	set_motor(0,64,true);
-	set_motor(1,64,true);
+	set_motor(0,255,true);
+	set_motor(1,255,true);
 	Motor_Enable();
 
 	while(true) __WFI();
