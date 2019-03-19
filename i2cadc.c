@@ -98,13 +98,13 @@ void Config_ADC(uint8_t mux){
 	Chip_I2C_MasterSend(I2C0, I2C_ADC_ADDR,i2c_tx_buffer, ADC_CONFIG_LEN);
 }
 
-uint8_t* Read_ADC(uint16_t samples){
+int8_t* Read_ADC(uint16_t samples){
 	const uint8_t conversion_register_pointer = 0b00000000;
 
 	ADC_bytes_to_read = samples;
 
-	Chip_I2C_MasterCmdRead(I2C0, I2C_ADC_ADDR, conversion_register_pointer, i2c_rx_buffer, 1);
-	*i2c_rx_buffer -= 78; // Change if we change PGA
+	Chip_I2C_MasterCmdRead(I2C0, I2C_ADC_ADDR, (uint8_t*)(conversion_register_pointer), i2c_rx_buffer, 1);
+	*i2c_rx_buffer -= 78; // Remove offset
 	ADC_bytes_read = 1;
 
 
@@ -118,7 +118,7 @@ void ADC_Read_Step(){
 	if(ADC_read_flag){
 		ADC_read_flag = 0;
 
-		int read = Chip_I2C_MasterRead(I2C0, I2C_ADC_ADDR, i2c_rx_buffer+ADC_bytes_read, 1);
+		int read = Chip_I2C_MasterRead(I2C0, I2C_ADC_ADDR, (uint8_t*)(i2c_rx_buffer+ADC_bytes_read), 1);
 		if(read){
 			i2c_rx_buffer[ADC_bytes_read] -= 78; // Change if we change PGA
 			++ADC_bytes_read;

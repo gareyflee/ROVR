@@ -15,7 +15,7 @@
 #define ADC_IRQ_HANDLER		TIMER1_IRQHandler
 #define ADC_IRQ_NVIC_NAME	TIMER1_IRQn
 
-#define MAX_ADC_SAMP_BUFF 512
+#define MAX_ADC_SAMP_BUFF 256
 
 /**
  * @brief Sets up I2C0 and ADC_READ_TIMER for adc operation
@@ -36,7 +36,7 @@ void Config_ADC(uint8_t mux);
  *
  * Returned buffer will be overwritten by next started read
  */
-uint8_t* Read_ADC(uint16_t samples);
+int8_t* Read_ADC(uint16_t samples);
 
 /**
  * @brief Checks flag indicating next ADC read is due and performs it if so.
