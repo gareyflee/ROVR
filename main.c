@@ -1,107 +1,44 @@
-//	ECE 153B W19 ROVR Project
-
 #include "board.h"
 #include "chip.h"
 #include "i2cadc.h"
 #include "motor.h"
 
-#define NUM_MICS 4
+#define FRONT 	0
+#define LEFT 	1
+#define BACK 	2
+#define RIGHT 	3
+
+#define NUM_MICS	4
+
+#define MIC_0_SCALAR			1.1307879
+#define MIC_1_SCALAR			1.0893626
+#define MIC_2_SCALAR			1.4021659
+#define MIC_3_SCALAR			0.6933965
+const static float MIC_SCALARS[] =
+	{MIC_0_SCALAR, MIC_1_SCALAR, MIC_2_SCALAR, MIC_3_SCALAR};
+
+#define NUM_MIC_READ_ITERATIONS		4
+#define NUM_SAMPLES 				10
+
+#define FB_SCALAR				2.0
+#define LR_SCALAR 				2.0
+
+#define MIC_THRESH				200.0
 
 
-
-
-#define MOTOR_SPEED 128
-#define SOUND_THRESH_FB 200.0
-#define SOUND_THRESH_LR 100.0
-#define MAX_LR_THRESH 500.0
-
-#define MIC_SCALAR_MAX 1000.0
-#define MIC3_SCALAR MIC_SCALAR_MAX/957.761875
-#define MIC0_SCALAR MIC_SCALAR_MAX/794.4513438
-#define MIC2_SCALAR MIC_SCALAR_MAX/802.3004688
-#define MIC1_SCALAR MIC_SCALAR_MAX/875.5912188
-
-#define NUM_SAMPLES 10
-#define NUM_SAMPLE_GROUPS 4
-#define NUM_SAMPLE_GROUP_HISTORY 2
-
-float MIC_SCALARS[] = {MIC0_SCALAR, MIC1_SCALAR, MIC2_SCALAR, MIC3_SCALAR};
-float Samples[NUM_MICS][NUM_SAMPLE_GROUP_HISTORY][NUM_SAMPLE_GROUPS];
-
-
-int WAIT_FB = 0;
-int WAIT_LR = 0;
-#define MAX_WAIT_TIME 512
-int MOTOR_DIR_LR = 0;
-
-#define Print_FB
-/**
- * @brief Runs board init functions included in every project
- */
 void Initialize_Board(){
 	SystemCoreClockUpdate();
 	Board_Init();
 }
 
-/**
- * @brief performs a mic read for single mic mux_num over NUM_SAMPLES samples, returns avg power
- * @param mux_num the mic to read 0-3
- * @return average power of mic signal over NUM_SAMPLES samples
- */
-float Read_Mic(uint8_t mux_num){
-	static uint8_t last_mux_num = -1;
-	int8_t* Sample_Data;
-	float sample_avg;
-	uint16_t bytes_processed = 0;
-	if (last_mux_num != mux_num)
-		Config_ADC(mux_num);
-	bytes_processed = 0;
-	sample_avg = 0.0;
-	Sample_Data = (int8_t*)Read_ADC(NUM_SAMPLES);
-	while(bytes_processed < NUM_SAMPLES){
-		ADC_Read_Step();
-		if (ADC_Bytes_Read() > bytes_processed){
-			float converted = (float)(Sample_Data[bytes_processed++]);
-			sample_avg += converted*converted;
-		}
-	}
-	sample_avg /= (NUM_SAMPLES*MIC_SCALARS[mux_num]);
-	last_mux_num = mux_num;
-	return sample_avg;
+
+float Average_Data(float *samples, int len){
+	float sum = 0.0;
+	int i;
+	for (i = 0; i < len; i++)
+		sum += samples[i];
+	return sum/len;
 }
-
-/*
-#define FLT_MAX 3.0e+36F
-#define FLT_MIN 1.0e-36F
-float* Median_Arr(float* samples){
-	int i, j, k;
-	float retArr[sizeof(samples)];
-	retArr[0] = samples[0];
-	retArr[sizeof(samples)-1] = samples[sizeof(samples)-1];
-	for (i = 1; i <= sizeof(samples)-2; i++){
-		float tempArr[3] = {0};
-		if (samples[i-1] >= samples[i] && samples[i] >= samples[i+1]){
-			retArr[i] = samples[i];
-		}
-		else if (samples[i+1] <= samples[i] && samples[i+1] >= samples[i-1]){
-			retArr[i] = samples[i+1];
-		}
-		else if (samples[i-1] <= samples[i] && samples[i-1] >= samples[i+1]){
-			retArr[i] = samples[i-1];
-		}
-		else if (samples[i-1] >= samples[i] && samples[i-1] <= samples[i+1]){
-			retArr[i] = samples[i-1];
-		}
-		else if (samples[i+1] >= samples[i] && samples[i+1] <= samples[i-1]){
-			retArr[i] = samples[i+1];
-		}
-		else if (samples[i] <= samples[i-1] && samples[i] >= samples[i+1]){
-			retArr[i] = samples[i];
-		}
-	}
-	return retArr;
-}*/
-
 void Median_Filt(float* samples, int len){
 	if(len<3) return;
 	float temp[3];
@@ -124,203 +61,99 @@ void Median_Filt(float* samples, int len){
 	return;
 }
 
-
-void Add_Circle_Buffer(float* new_data, int mux_num){
-//	Only valid for NUM_SAMPLE_HISTORY of 2
-// float Samples[NUM_MICS][NUM_SAMPLE_GROUP_HISTORY][NUM_SAMPLE_GROUPS] = {0};
-	int i;
-	for (i=0; i < NUM_SAMPLE_GROUPS; i++){
-		Samples[mux_num][0][i] = Samples[mux_num][1][i];
-		Samples[mux_num][1][i] = new_data[i];
+float Read_Mic_Samples(uint8_t mux_num){
+	static uint8_t last_mux_num = -1;
+	int8_t* Sample_Data;
+	float sample_avg;
+	uint16_t bytes_processed = 0;
+	if (last_mux_num != mux_num)
+		Config_ADC(mux_num);
+	bytes_processed = 0;
+	sample_avg = 0.0;
+	Sample_Data = (int8_t*)Read_ADC(NUM_SAMPLES);
+	while(bytes_processed < NUM_SAMPLES){
+		ADC_Read_Step();
+		if (ADC_Bytes_Read() > bytes_processed){
+			float converted = (float)(Sample_Data[bytes_processed++]);
+			sample_avg += converted*converted;
+		}
 	}
-	return;
+	sample_avg /= (NUM_SAMPLES*MIC_SCALARS[mux_num]);
+	last_mux_num = mux_num;
+	return sample_avg*MIC_SCALARS[mux_num];
 }
 
-//Forward/backward, right/left
-static float vector_arr[2] = {0.0f,0.0f};
-//Forward positive, right positive
-
-/**
- * @brief takes a0,a1,a2,a3 arranged clockwise at 45 degree points, sets vector_arr
- * @param a float array a0,a1,a2,a3
- */
-void vectorMath(const float* a){
-	vector_arr[0] = a[0]+a[3]-(a[1]+a[2]);
-	vector_arr[1] = -1*(a[0]+a[1])+(a[2]+a[3]);
-
-	//vector_arr[0] = a[0]-a[2];
-	//vector_arr[1] = a[1]-a[3];
-	//return vector_differences;
-}
+void Update_Motors(){
 
 
-
-/**
- * @brief update the motor state with the current vector_arr data
- */
-void updateMotors(){
-
-	//LEFT RIGHT VECTORS
-	if(vector_arr[1] > SOUND_THRESH_LR){
-		//set_motor(0,MOTOR_SPEED,true);
-		//set_motor(1,MOTOR_SPEED,true);
-//#ifndef Print_FB
-//		printf("L/R: %f\r\n", vector_arr[1]);
-//#endif
-		MOTOR_DIR_LR = (int)(MOTOR_SPEED/MAX_LR_THRESH*vector_arr[1]);
-	}
-	else if(vector_arr[1] < -SOUND_THRESH_LR){
-		//set_motor(0,MOTOR_SPEED,false);
-		//set_motor(1,MOTOR_SPEED,false);
-//#ifndef Print_FB
-//		printf("L/R: %f\r\n", vector_arr[1]);
-//#endif
-		MOTOR_DIR_LR = (int)(MOTOR_SPEED/MAX_LR_THRESH*vector_arr[1]);
-	}
-	else{
-		WAIT_LR++;
-	}
-
-
-	//SET MOTOR SPEED
-	uint8_t M0;
-	uint8_t M1;
-	if(MOTOR_DIR_LR<0){
-		M0 = MOTOR_SPEED;
-		M1 = MOTOR_SPEED-MOTOR_DIR_LR;
-	}
-	else if(MOTOR_DIR_LR>0){
-		M0 = MOTOR_SPEED+MOTOR_DIR_LR;
-		M1 = MOTOR_SPEED;
-	}
-	else{
-		M0 = MOTOR_SPEED;
-		M1 = MOTOR_SPEED;
-	}
-
-	//FORWARD BACKWARD VECTORS
-	if(vector_arr[0] > SOUND_THRESH_FB){
-		set_motor(0,M0,true);
-		set_motor(1,M1,true);
-//#ifdef Print_FB
-//		printf("F/B: %f\r\n", vector_arr[0]);
-//#endif
-	}
-	else if(vector_arr[0] < -SOUND_THRESH_FB){
-		set_motor(0,M0,false);
-		set_motor(1,M1,false);
-//#ifdef Print_FB
-//		printf("F/B: %f\r\n", vector_arr[0]);
-//#endif
-	}
-	else{
-		WAIT_FB++;
-	}
-
-
-	if(WAIT_FB > MAX_WAIT_TIME){
-		WAIT_FB = 0;
-		set_motor(0,0,true);
-		set_motor(1,0,true);
-	}
-	if(WAIT_LR > MAX_WAIT_TIME){
-		WAIT_LR = 0;
-		MOTOR_DIR_LR = 0;
-		//set_motor(0,0,true);
-		//set_motor(1,0,true);
-	}
 
 }
 
-// #define JUST_FORWARD_DEBUG
-
-int main(){
-
-	/*float Test[] = {5.0, 1.0, 2.0, 3.5, 8.0};
-	Median_Arr(Test);
-	int i;
-	for (i=0; i < 5; i++)
-		printf("%f ", Catch[i]);
-	return 0;*/
 
 
-
-	memset(Samples, 0.0, sizeof(Samples));
-	Initialize_Board();
-	Initialize_Motor();
-//#ifndef JUST_FORWARD_DEBUG
-	Initialize_I2CADC();
-
-	int mux_test = 0;
-	float sample_avgs[NUM_MICS] = {0.0f,0.0f,0.0f,0.0f};
-	int Kyles_Sample_Num = 0;
-	float Kyles_Samples[NUM_MICS*NUM_SAMPLE_GROUPS*100] = {0};
-	memset(Kyles_Samples, 0.0, sizeof(Kyles_Samples));
-	for (sample_num = 0; sample_num < NUM_SAMPLE_GROUPS; sample_num++){
-		sample_avgs[sample_num] = Read_Mic(mux_test);
-		Kyles_Samples[Kyles_Sample_Num++] = sample_avgs[sample_num];
-
+float Read_Mic(uint8_t mux_num){
+	int iter;
+	float samples[NUM_MIC_READ_ITERATIONS] = {0};
+	for (iter = 0; iter < NUM_MIC_READ_ITERATIONS; iter++){
+		samples[iter] = Read_Mic_Samples(mux_num);
 	}
-	for (sample_num = 0; sample_num < NUM_SAMPLE_GROUPS; sample_num++)
-		printf("%f\r\n", Kyles_Samples[sample_num]);
+	Median_Filt(samples, NUM_MIC_READ_ITERATIONS);
+	return Average_Data(samples, NUM_MIC_READ_ITERATIONS);
+}
 
-
-
-//	updateMotors();
-//	Motor_Enable();
-//float Samples[NUM_SAMPLES_GROUPS][NUM_SAMPLES] = {0};
-
-	/*
-	bool fc = false;
-	int num_trials = 0;
-	float sample_avgs[NUM_MICS] = {0.0f,0.0f,0.0f,0.0f};
-	int Kyles_Sample_Num = 0;
-	float Kyles_Samples[NUM_MICS*NUM_SAMPLE_GROUPS*100] = {0};
-	memset(Kyles_Samples, 0.0, sizeof(Kyles_Samples));
+void Ping_Mics(float* ret_mic_vals){
+	bool is_found = false;
 	int mux_num;
-	int sample_num;
+	int saved_sample_num = 0;
+	float current_mic_val = 0;
+	while (!is_found){
+		current_mic_val = Read_Mic(mux_num);
+		if (current_mic_val >= MIC_THRESH || saved_sample_num){
+			ret_mic_vals[mux_num] = current_mic_val;
+			saved_sample_num++;
 
-	while(num_trials++ < 100){
-		for (mux_num = 0; mux_num < NUM_MICS; mux_num++){
-			for (sample_num = 0; sample_num < NUM_SAMPLE_GROUPS; sample_num++){
-				sample_avgs[sample_num] = Read_Mic(mux_num);
-				Kyles_Samples[Kyles_Sample_Num++] = sample_avgs[sample_num];
-
-			}
-			Add_Circle_Buffer(sample_avgs, mux_num);
 		}
 
+
+		if (saved_sample_num >3)
+			is_found = true;
+		if (mux_num++ >= NUM_MICS)
+			mux_num = 0;
 	}
-	int i;
-	int j;
+}
 
-	for (i=0; i < 1600; i ++){
-		printf("%f\r", Kyles_Samples[i]);
+int Get_Direction(float *mic_vals){
+	if (mic_vals[FRONT] >= mic_vals[BACK] * FB_SCALAR)
+		printf("Front\r\n");
+	else if (mic_vals[BACK] >= mic_vals[FRONT] * FB_SCALAR)
+		printf("Back\r\n");
+
+	if (mic_vals[LEFT] >= mic_vals[RIGHT] * LR_SCALAR)
+			printf("Left\r\n");
+		else if (mic_vals[RIGHT] >= mic_vals[LEFT] * LR_SCALAR)
+			printf("Right\r\n");
+	return 0;
+}
+
+
+int main(){
+	printf("Killing it....\r\n");
+
+	Initialize_Board();
+	Initialize_Motor();
+	Initialize_I2CADC();
+
+	bool is_turning = false;
+	bool is_on = true;
+
+	while (is_on){
+		float mic_vals[NUM_MICS] = {0};
+		Ping_Mics(mic_vals);
+		Get_Direction(mic_vals);
+
+
+
 	}
-
-*/
-
 
 	return 0;
-//	while(true){
-//		uint8_t mux_num = 0;
-//		for(;mux_num<NUM_MICS;++mux_num){
-//			sample_avgs[mux_num] = Read_Mic(mux_num);
-//			if(fc){
-//				vectorMath(sample_avgs);
-//				printf("F/B: %f\r\n", vector_arr[0]);
-////				updateMotors();
-//			}
-//		}
-//
-//		fc = true;
-//	}
-////#else // JUST_FORWARD_DEBUG
-////	set_motor(0,255,true);
-////	set_motor(1,255,true);
-////	Motor_Enable();
-////
-////	while(true) __WFI();
-////#endif // JUST_FORWARD_DEBUG
-//	return 0;
 }
