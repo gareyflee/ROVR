@@ -53,9 +53,4 @@ uint8_t ADC_Read_Complete();
  */
 uint16_t ADC_Bytes_Read();
 
-/**
- * @brief returns some debug info
- */
-unsigned* ADC_debug_dat();
-
 #endif //I2C_H
