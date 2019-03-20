@@ -10,6 +10,30 @@
     </a>
     <nav class="box" style="text-align:center"><a href="about.html">About</a><a href="team.html">Team</a></nav>
     <article>
+        <img src="" style="width:100%;height:0%;" />
+        <h1>P.</h1>
+        <p>2019-03-20 : 00:00am to 2019-03-20 : 00:10am</p>
+        <p>Data processing and code in progress.</p>
+    </article>
+    <article>
+        <img src="resources/Data_Gathering.jpg"
+            style="display:block;width:40%;margin:auto;filter:blur(2px);-webkit-filter:blur(2px);" />
+        <h1>Progress Paved with Stubmles</h1>
+        <p>2019-03-19 : 2:40pm to 11:59pm</p>
+        <p>In beginning development tonight, we encountered significant problems with our initial design intents because
+            of our intended listening process. We assumed that the voice signal would be sampled sufficiently quickly
+            that its objective power would be the same. From that, we assumed we could find directional power. However,
+            two-syllable and less words are extremely short (~100ms) and our sampling rate is limited to 3300 samples
+            per second. We need to make sure that we do not do a read to determine direction between to microphone reads
+            not done during the same word. For this purpose, Kyle proposed several exceptional data processing
+            algorithms to better control the input data. We wrote code to collect data from the LPC4088 and began to
+            perform our proposed data processing in Excel and MATLAB, estimating performance for several test sets of
+            simple tones and voice samples.</p>
+        <p>We also discovered that even with explicitly programmed gain, the actual signal gain from each mic varied
+            wildly between our four units. To correct this, we also generated normalization scalars from our test data
+            to apply to each microphone.</p>
+    </article>
+    <article>
         <img src="resources/Assembly.jpg"
             style="display:block;width:40%;margin:auto;filter: blur(2px);-webkit-filter: blur(2px);" />
         <h1>People Pursuing Part Connection</h1>
