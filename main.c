@@ -1,3 +1,4 @@
+
 #include "board.h"
 #include "chip.h"
 #include "i2cadc.h"
@@ -7,6 +8,7 @@
 #define LEFT 	1
 #define BACK 	2
 #define RIGHT 	3
+#define NONE	5
 
 #define NUM_MICS	4
 
@@ -21,17 +23,24 @@ const static float MIC_SCALARS[] =
 #define NUM_SAMPLES 				10
 
 #define FB_SCALAR				2.0
-#define LR_SCALAR 				2.0
+#define LR_SCALAR 				2.5
 
-#define MIC_THRESH				200.0
+#define MIC_THRESH				250.0
 
 
 #define SLEEP_TIMER_PRESCALE	120000
-#define SLEEP_TIMER_MATCH		10
+#define SLEEP_TIMER_MATCH		100
 #define SLEEP_TIMER				LPC_TIMER2
 #define SLEEP_TIMER_IRQ_HANDLER				TIMER2_IRQHandler
 #define SLEEP_TIMER_INTERRUPT_NVIC_NAME		TIMER2_IRQn
 
+#define MOTOR_SPEED_MAX 255
+#define MOTOR_SPEED_TURN 128
+
+#define MOTOR_LEFT		1
+#define MOTOR_RIGHT 	0
+#define MOTOR_FORWARD 	true
+#define MOTOR_BACKWARD	false
 static bool FB_Sleep = false;
 static bool LR_Sleep = false;
 
@@ -111,10 +120,26 @@ float Read_Mic_Samples(uint8_t mux_num){
 	return sample_avg*MIC_SCALARS[mux_num];
 }
 
-void Update_Motors(){
+void Update_Motor_Direction(int dir){
+	static int recent_direction = NONE;
+	if (dir == FRONT){
+		set_motor(MOTOR_LEFT, MOTOR_SPEED_MAX, MOTOR_FORWARD);
+		set_motor(MOTOR_RIGHT, MOTOR_SPEED_MAX, MOTOR_FORWARD);
+	}
+	else if (dir == BACK){
+		set_motor(MOTOR_LEFT, MOTOR_SPEED_MAX, MOTOR_BACKWARD);
+		set_motor(MOTOR_RIGHT, MOTOR_SPEED_MAX, MOTOR_BACKWARD);
+	}
+	else if (dir == LEFT){
+		set_motor(MOTOR_LEFT, MOTOR_SPEED_TURN, MOTOR_FORWARD);
+		set_motor(MOTOR_RIGHT, MOTOR_SPEED_MAX, MOTOR_FORWARD);
 
+	}
+	else if (dir == RIGHT){
+		set_motor(MOTOR_LEFT, MOTOR_SPEED_MAX, MOTOR_FORWARD);
+		set_motor(MOTOR_RIGHT, MOTOR_SPEED_TURN, MOTOR_FORWARD);
 
-
+	}
 }
 
 
@@ -146,34 +171,62 @@ void Ping_Mics(float* ret_mic_vals){
 		if (mux_num++ >= NUM_MICS)
 			mux_num = 0;
 	}
+
 }
 
 int Get_Direction(float *mic_vals){
 	bool fb_sleep_temp = false;
 	bool lr_sleep_temp = false;
+	static int Direction_Counter[NUM_MICS] = {0};
+	if (!LR_Sleep){
+		if (mic_vals[LEFT] >= mic_vals[RIGHT] * LR_SCALAR && mic_vals[LEFT] >= MIC_THRESH){
+			lr_sleep_temp = true;
+			Direction_Counter[LEFT]++;
+			Direction_Counter[RIGHT] = 0;
+			if (Direction_Counter[LEFT] > 1){
+//				printf("Left\r\n");
+				Update_Motor_Direction(LEFT);
+				Direction_Counter[LEFT] = 0;
+			}
+
+		}
+		else if (mic_vals[RIGHT] >= mic_vals[LEFT] * LR_SCALAR && mic_vals[RIGHT] >= MIC_THRESH){
+			lr_sleep_temp = true;
+			Direction_Counter[RIGHT]++;
+			Direction_Counter[LEFT] = 0;
+			if (Direction_Counter[RIGHT] > 1){
+//				printf("Right\r\n");
+				Update_Motor_Direction(RIGHT);
+				Direction_Counter[RIGHT] = 0;
+			}
+		}
+	}
 	if (!FB_Sleep){
 		if (mic_vals[FRONT] >= mic_vals[BACK] * FB_SCALAR && mic_vals[FRONT] >= MIC_THRESH){
 			fb_sleep_temp = true;
-			printf("Front\r\n");
+			Direction_Counter[FRONT]++;
+			Direction_Counter[BACK] = 0;
+			if (Direction_Counter[FRONT] > 1){
+//				printf("Front\r\n");
+				Update_Motor_Direction(FRONT);
+				Direction_Counter[FRONT] = 0;
+			}
 
 		}
 		else if (mic_vals[BACK] >= mic_vals[FRONT] * FB_SCALAR && mic_vals[BACK] >= MIC_THRESH){
 			fb_sleep_temp = true;
-			printf("Back\r\n");
+			Direction_Counter[BACK]++;
+			Direction_Counter[FRONT] = 0;
+			if (Direction_Counter[BACK] > 2){
+//				printf("Back\r\n");
+				Update_Motor_Direction(BACK);
+				Direction_Counter[BACK] = 0;
+			}
 
 		}
 	}
 
-	if (!LR_Sleep){
-		if (mic_vals[LEFT] >= mic_vals[RIGHT] * LR_SCALAR && mic_vals[LEFT] >= MIC_THRESH){
-			lr_sleep_temp = true;
-			printf("Left\r\n");
-		}
-		else if (mic_vals[RIGHT] >= mic_vals[LEFT] * LR_SCALAR && mic_vals[RIGHT] >= MIC_THRESH){
-			lr_sleep_temp = true;
-			printf("Right\r\n");
-		}
-	}
+
 
 
 	if (fb_sleep_temp)
@@ -192,12 +245,14 @@ int Get_Direction(float *mic_vals){
 
 
 int main(){
-	printf("Killing it....\r\n");
+//	printf("Killing it....\r\n");
 
 	Initialize_Board();
 	Initialize_Motor();
 	Initialize_I2CADC();
 	Initialize_Sleep_Timer();
+	Update_Motor_Direction(NONE);
+	Motor_Enable();
 
 	bool is_turning = false;
 	bool is_on = true;
@@ -213,3 +268,4 @@ int main(){
 
 	return 0;
 }
+
