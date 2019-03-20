@@ -16,10 +16,10 @@
 #define MAX_LR_THRESH 500.0
 
 #define MIC_SCALAR_MAX 1000.0
-#define MIC0_SCALAR MIC_SCALAR_MAX/957.761875
-#define MIC1_SCALAR MIC_SCALAR_MAX/794.4513438
+#define MIC3_SCALAR MIC_SCALAR_MAX/957.761875
+#define MIC0_SCALAR MIC_SCALAR_MAX/794.4513438
 #define MIC2_SCALAR MIC_SCALAR_MAX/802.3004688
-#define MIC3_SCALAR MIC_SCALAR_MAX/875.5912188
+#define MIC1_SCALAR MIC_SCALAR_MAX/875.5912188
 
 #define NUM_SAMPLES 10
 #define NUM_SAMPLE_GROUPS 4
@@ -251,15 +251,31 @@ int main(){
 //#ifndef JUST_FORWARD_DEBUG
 	Initialize_I2CADC();
 
+	int mux_test = 0;
+	float sample_avgs[NUM_MICS] = {0.0f,0.0f,0.0f,0.0f};
+	int Kyles_Sample_Num = 0;
+	float Kyles_Samples[NUM_MICS*NUM_SAMPLE_GROUPS*100] = {0};
+	memset(Kyles_Samples, 0.0, sizeof(Kyles_Samples));
+	for (sample_num = 0; sample_num < NUM_SAMPLE_GROUPS; sample_num++){
+		sample_avgs[sample_num] = Read_Mic(mux_test);
+		Kyles_Samples[Kyles_Sample_Num++] = sample_avgs[sample_num];
+
+	}
+	for (sample_num = 0; sample_num < NUM_SAMPLE_GROUPS; sample_num++)
+		printf("%f\r\n", Kyles_Samples[sample_num]);
+
+
 
 //	updateMotors();
 //	Motor_Enable();
 //float Samples[NUM_SAMPLES_GROUPS][NUM_SAMPLES] = {0};
+
+	/*
 	bool fc = false;
 	int num_trials = 0;
 	float sample_avgs[NUM_MICS] = {0.0f,0.0f,0.0f,0.0f};
 	int Kyles_Sample_Num = 0;
-	float Kyles_Samples[4][NUM_MICS*NUM_SAMPLE_GROUPS*100];
+	float Kyles_Samples[NUM_MICS*NUM_SAMPLE_GROUPS*100] = {0};
 	memset(Kyles_Samples, 0.0, sizeof(Kyles_Samples));
 	int mux_num;
 	int sample_num;
@@ -268,7 +284,7 @@ int main(){
 		for (mux_num = 0; mux_num < NUM_MICS; mux_num++){
 			for (sample_num = 0; sample_num < NUM_SAMPLE_GROUPS; sample_num++){
 				sample_avgs[sample_num] = Read_Mic(mux_num);
-				Kyles_Samples[mux_num][Kyles_Sample_Num++] = sample_avgs[sample_num];
+				Kyles_Samples[Kyles_Sample_Num++] = sample_avgs[sample_num];
 
 			}
 			Add_Circle_Buffer(sample_avgs, mux_num);
@@ -277,12 +293,12 @@ int main(){
 	}
 	int i;
 	int j;
-	for (j=0; j < 4; j++){
-		for (i=0; i < 1600; i ++){
-			printf("%f\r", Kyles_Samples[j][i]);
-		}
-		printf("***********************************\r\n\n");
+
+	for (i=0; i < 1600; i ++){
+		printf("%f\r", Kyles_Samples[i]);
 	}
+
+*/
 
 
 	return 0;
