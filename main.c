@@ -54,6 +54,7 @@ static bool LR_Sleep = false;
  * @brief handler for interrupts from our microphone sleep timer
  */
 void SLEEP_TIMER_IRQ_HANDLER(void){
+// Turns off flags for Left/Right and Front/back sleeping and stops timers
 	Chip_TIMER_Disable(SLEEP_TIMER);
 	FB_Sleep = LR_Sleep = false;
 	Chip_TIMER_ClearMatch(SLEEP_TIMER,0);
@@ -68,13 +69,9 @@ void Initialize_Board(){
 	Board_Init();
 }
 
-/**
- * @brief Function to average an array of data
- * @param samples input array
- * @param len length of input array
- * @return float the average of the array of floats samples
- */
+
 float Average_Data(float *samples, int len){
+// Simple average of array of length: len
 	float sum = 0.0;
 	int i;
 	for (i = 0; i < len; i++)
@@ -86,22 +83,20 @@ float Average_Data(float *samples, int len){
  * @brief prepares SLEEP_TIMER for use
  */
 void Initialize_Sleep_Timer(){
-	Chip_TIMER_Init(SLEEP_TIMER);								// Initialize TIMER0
-	Chip_TIMER_PrescaleSet(SLEEP_TIMER,SLEEP_TIMER_PRESCALE);	// Set prescale value
+// Sets up the timers for removing echoes after receiving a signal
+	Chip_TIMER_Init(SLEEP_TIMER);
+	Chip_TIMER_PrescaleSet(SLEEP_TIMER,SLEEP_TIMER_PRESCALE);
 	Chip_TIMER_SetMatch(SLEEP_TIMER,0,SLEEP_TIMER_MATCH);
-	Chip_TIMER_MatchEnableInt(SLEEP_TIMER, 0);					// Configure to trigger interrupt on match
+	Chip_TIMER_MatchEnableInt(SLEEP_TIMER, 0);
 	Chip_TIMER_ResetOnMatchEnable(SLEEP_TIMER, 0);
 
 	NVIC_ClearPendingIRQ(SLEEP_TIMER_INTERRUPT_NVIC_NAME);
 	NVIC_EnableIRQ(SLEEP_TIMER_INTERRUPT_NVIC_NAME);
 }
 
-/**
- * @brief Performs a median filter in-place on an array of data
- * @param samples the input data
- * @param len length of the array samples
- */
+
 void Median_Filt(float* samples, int len){
+// Simple running median filter
 	if(len<3) return;
 	float temp[3];
 	temp[0] = samples[0];
@@ -129,6 +124,8 @@ void Median_Filt(float* samples, int len){
  * @return float the average microphone power across NUM_SAMPLES samples
  */
 float Read_Mic_Samples(uint8_t mux_num){
+// This function collects several mic data points for a given mic, then returns the
+// power of the mic normalized by a different gain value for each mic
 	static uint8_t last_mux_num = -1;
 	int8_t* Sample_Data;
 	float sample_avg;
@@ -155,6 +152,7 @@ float Read_Mic_Samples(uint8_t mux_num){
  * @param dir the new direction enum
  */
 void Update_Motor_Direction(int dir){
+// This function changes the four drive states of the motors
 	static int recent_direction = NONE;
 	if (dir == FRONT){
 		set_motor(MOTOR_LEFT, MOTOR_SPEED_MAX, MOTOR_FORWARD);
@@ -181,6 +179,8 @@ void Update_Motor_Direction(int dir){
  * @param mux_num microphone to read from
  */
 float Read_Mic(uint8_t mux_num){
+// This function Reads several mic samples (and gets averages) several times,
+// It then median filters the data (to remove impulse noise) and averages after
 	int iter;
 	float samples[NUM_MIC_READ_ITERATIONS] = {0};
 	for (iter = 0; iter < NUM_MIC_READ_ITERATIONS; iter++){
@@ -287,13 +287,8 @@ void Get_Direction(float *mic_vals){
 	}
 }
 
-/**
- * @brief program entry point
- * @return program exit code
- */
-int main(){
-//	printf("Killing it....\r\n");
 
+int main(){
 	Initialize_Board();
 	Initialize_Motor();
 	Initialize_I2CADC();
@@ -302,6 +297,7 @@ int main(){
 	Motor_Enable();
 
 	while (true){
+		// Continuously check all 4 mics, then process data and possibly update the directional state of ROVR
 		float mic_vals[NUM_MICS] = {0};
 		Ping_Mics(mic_vals);
 		Get_Direction(mic_vals);
