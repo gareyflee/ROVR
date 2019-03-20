@@ -3,6 +3,7 @@
 #include "i2cadc.h"
 #include "motor.h"
 
+// Direction enum
 #define FRONT 	0
 #define LEFT 	1
 #define BACK 	2
@@ -11,6 +12,7 @@
 
 #define NUM_MICS	4
 
+// Microphone normalization factors
 #define MIC_0_SCALAR			1.1307879
 #define MIC_1_SCALAR			1.0893626
 #define MIC_2_SCALAR			1.4021659
@@ -18,24 +20,29 @@
 const static float MIC_SCALARS[] =
 	{MIC_0_SCALAR, MIC_1_SCALAR, MIC_2_SCALAR, MIC_3_SCALAR};
 
+// Microphone sampling control
 #define NUM_MIC_READ_ITERATIONS		4
 #define NUM_SAMPLES 				10
 
+// Control system behavior scalars
 #define FB_SCALAR				2.0
 #define LR_SCALAR 				2.5
 
+// Microphone useful noise threshold
 #define MIC_THRESH				250.0
 
-
+// Microphone input read sleep timer
 #define SLEEP_TIMER_PRESCALE	120000
 #define SLEEP_TIMER_MATCH		100
 #define SLEEP_TIMER				LPC_TIMER2
 #define SLEEP_TIMER_IRQ_HANDLER				TIMER2_IRQHandler
 #define SLEEP_TIMER_INTERRUPT_NVIC_NAME		TIMER2_IRQn
 
+// Motor speed controls
 #define MOTOR_SPEED_MAX 255
 #define MOTOR_SPEED_TURN 128
 
+// Motor pin enums
 #define MOTOR_LEFT		1
 #define MOTOR_RIGHT 	0
 #define MOTOR_FORWARD 	true
@@ -43,6 +50,9 @@ const static float MIC_SCALARS[] =
 static bool FB_Sleep = false;
 static bool LR_Sleep = false;
 
+/**
+ * @brief handler for interrupts from our microphone sleep timer
+ */
 void SLEEP_TIMER_IRQ_HANDLER(void){
 	Chip_TIMER_Disable(SLEEP_TIMER);
 	FB_Sleep = LR_Sleep = false;
@@ -50,12 +60,20 @@ void SLEEP_TIMER_IRQ_HANDLER(void){
 	NVIC_ClearPendingIRQ(SLEEP_TIMER_INTERRUPT_NVIC_NAME);
 }
 
+/**
+ * @brief Board initialization functions included in every LPC4088 program
+ */
 void Initialize_Board(){
 	SystemCoreClockUpdate();
 	Board_Init();
 }
 
-
+/**
+ * @brief Function to average an array of data
+ * @param samples input array
+ * @param len length of input array
+ * @return float the average of the array of floats samples
+ */
 float Average_Data(float *samples, int len){
 	float sum = 0.0;
 	int i;
@@ -64,6 +82,9 @@ float Average_Data(float *samples, int len){
 	return sum/len;
 }
 
+/**
+ * @brief
+ */
 void Initialize_Sleep_Timer(){
 	Chip_TIMER_Init(SLEEP_TIMER);								// Initialize TIMER0
 	Chip_TIMER_PrescaleSet(SLEEP_TIMER,SLEEP_TIMER_PRESCALE);	// Set prescale value
