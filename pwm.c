@@ -40,6 +40,7 @@ void TIMER0_IRQHandler(void)
  ****************************************************************************/
 
 void Initialize_PWM(){
+	// Prepare PWM GPIO pins as GPIO outputs
 	Chip_GPIO_WriteDirBit(LPC_GPIO, PWM_0_PORT, PWM_0_PIN, true);
 	Chip_GPIO_WritePortBit(LPC_GPIO, PWM_0_PORT, PWM_0_PIN, true);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, PWM_1_PORT, PWM_1_PIN, true);

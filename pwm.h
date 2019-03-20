@@ -30,13 +30,28 @@
  * Public functions
  ****************************************************************************/
 
+/**
+ * @brief Initialize PWM GPIO pins and timer block
+ */
 void Initialize_PWM();
 
+/**
+ * @brief Start PWM timer block
+ */
 void PWM_Enable();
 
+/**
+ * @brief Halt PWM timer block
+ *
+ * Note: Does not disable PWM output signal!
+ */
 void PWM_Disable();
 
-
+/**
+ * @brief Set PWM power
+ * @param PWM_ID the PWM unit to change
+ * @param pwm_val 0-255 value representing 0-100% duty cycle
+ */
 void set_pwm(uint8_t PWM_ID,uint8_t pwm_val);
 
 #endif //PWM_C
