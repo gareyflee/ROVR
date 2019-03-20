@@ -27,7 +27,7 @@ const static float MIC_SCALARS[] =
 
 
 #define SLEEP_TIMER_PRESCALE	120000
-#define SLEEP_TIMER_MATCH		30
+#define SLEEP_TIMER_MATCH		10
 #define SLEEP_TIMER				LPC_TIMER2
 #define SLEEP_TIMER_IRQ_HANDLER				TIMER2_IRQHandler
 #define SLEEP_TIMER_INTERRUPT_NVIC_NAME		TIMER2_IRQn
@@ -131,13 +131,14 @@ float Read_Mic(uint8_t mux_num){
 
 void Ping_Mics(float* ret_mic_vals){
 	bool is_found = false;
+	uint8_t mic_order[NUM_MICS] = {FRONT, BACK, LEFT, RIGHT};
 	int mux_num = 0;
 	int saved_sample_num = 0;
 	float current_mic_val = 0;
 	while (!is_found){
-		current_mic_val = Read_Mic(mux_num);
+		current_mic_val = Read_Mic(mic_order[mux_num]);
 		if (current_mic_val >= MIC_THRESH || saved_sample_num){
-			ret_mic_vals[mux_num] = current_mic_val;
+			ret_mic_vals[mic_order[mux_num]] = current_mic_val;
 			saved_sample_num++;
 		}
 		if (saved_sample_num >3)
