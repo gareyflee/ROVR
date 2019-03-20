@@ -26,6 +26,22 @@ const static float MIC_SCALARS[] =
 #define MIC_THRESH				200.0
 
 
+#define SLEEP_TIMER_PRESCALE	120000
+#define SLEEP_TIMER_MATCH		30
+#define SLEEP_TIMER				LPC_TIMER2
+#define SLEEP_TIMER_IRQ_HANDLER				TIMER2_IRQHandler
+#define SLEEP_TIMER_INTERRUPT_NVIC_NAME		TIMER2_IRQn
+
+static bool FB_Sleep = false;
+static bool LR_Sleep = false;
+
+void SLEEP_TIMER_IRQ_HANDLER(void){
+	Chip_TIMER_Disable(SLEEP_TIMER);
+	FB_Sleep = LR_Sleep = false;
+	Chip_TIMER_ClearMatch(SLEEP_TIMER,0);
+	NVIC_ClearPendingIRQ(SLEEP_TIMER_INTERRUPT_NVIC_NAME);
+}
+
 void Initialize_Board(){
 	SystemCoreClockUpdate();
 	Board_Init();
@@ -39,6 +55,18 @@ float Average_Data(float *samples, int len){
 		sum += samples[i];
 	return sum/len;
 }
+
+void Initialize_Sleep_Timer(){
+	Chip_TIMER_Init(SLEEP_TIMER);								// Initialize TIMER0
+	Chip_TIMER_PrescaleSet(SLEEP_TIMER,SLEEP_TIMER_PRESCALE);	// Set prescale value
+	Chip_TIMER_SetMatch(SLEEP_TIMER,0,SLEEP_TIMER_MATCH);
+	Chip_TIMER_MatchEnableInt(SLEEP_TIMER, 0);					// Configure to trigger interrupt on match
+	Chip_TIMER_ResetOnMatchEnable(SLEEP_TIMER, 0);
+
+	NVIC_ClearPendingIRQ(SLEEP_TIMER_INTERRUPT_NVIC_NAME);
+	NVIC_EnableIRQ(SLEEP_TIMER_INTERRUPT_NVIC_NAME);
+}
+
 void Median_Filt(float* samples, int len){
 	if(len<3) return;
 	float temp[3];
@@ -103,7 +131,7 @@ float Read_Mic(uint8_t mux_num){
 
 void Ping_Mics(float* ret_mic_vals){
 	bool is_found = false;
-	int mux_num;
+	int mux_num = 0;
 	int saved_sample_num = 0;
 	float current_mic_val = 0;
 	while (!is_found){
@@ -111,10 +139,7 @@ void Ping_Mics(float* ret_mic_vals){
 		if (current_mic_val >= MIC_THRESH || saved_sample_num){
 			ret_mic_vals[mux_num] = current_mic_val;
 			saved_sample_num++;
-
 		}
-
-
 		if (saved_sample_num >3)
 			is_found = true;
 		if (mux_num++ >= NUM_MICS)
@@ -123,15 +148,44 @@ void Ping_Mics(float* ret_mic_vals){
 }
 
 int Get_Direction(float *mic_vals){
-	if (mic_vals[FRONT] >= mic_vals[BACK] * FB_SCALAR)
-		printf("Front\r\n");
-	else if (mic_vals[BACK] >= mic_vals[FRONT] * FB_SCALAR)
-		printf("Back\r\n");
+	bool fb_sleep_temp = false;
+	bool lr_sleep_temp = false;
+	if (!FB_Sleep){
+		if (mic_vals[FRONT] >= mic_vals[BACK] * FB_SCALAR && mic_vals[FRONT] >= MIC_THRESH){
+			fb_sleep_temp = true;
+			printf("Front\r\n");
 
-	if (mic_vals[LEFT] >= mic_vals[RIGHT] * LR_SCALAR)
+		}
+		else if (mic_vals[BACK] >= mic_vals[FRONT] * FB_SCALAR && mic_vals[BACK] >= MIC_THRESH){
+			fb_sleep_temp = true;
+			printf("Back\r\n");
+
+		}
+	}
+
+	if (!LR_Sleep){
+		if (mic_vals[LEFT] >= mic_vals[RIGHT] * LR_SCALAR && mic_vals[LEFT] >= MIC_THRESH){
+			lr_sleep_temp = true;
 			printf("Left\r\n");
-		else if (mic_vals[RIGHT] >= mic_vals[LEFT] * LR_SCALAR)
+		}
+		else if (mic_vals[RIGHT] >= mic_vals[LEFT] * LR_SCALAR && mic_vals[RIGHT] >= MIC_THRESH){
+			lr_sleep_temp = true;
 			printf("Right\r\n");
+		}
+	}
+
+
+	if (fb_sleep_temp)
+		FB_Sleep = true;
+	if (lr_sleep_temp)
+		LR_Sleep = true;
+
+	if (fb_sleep_temp || lr_sleep_temp){
+		Chip_TIMER_Reset(SLEEP_TIMER);
+		Chip_TIMER_Enable(SLEEP_TIMER);
+	}
+
+
 	return 0;
 }
 
@@ -142,6 +196,7 @@ int main(){
 	Initialize_Board();
 	Initialize_Motor();
 	Initialize_I2CADC();
+	Initialize_Sleep_Timer();
 
 	bool is_turning = false;
 	bool is_on = true;
