@@ -40,7 +40,7 @@ const static float MIC_SCALARS[] =
 
 // Motor speed controls
 #define MOTOR_SPEED_MAX 255
-#define MOTOR_SPEED_TURN 128
+#define MOTOR_SPEED_TURN 255
 
 // Motor pin enums
 #define MOTOR_LEFT		1
@@ -83,7 +83,7 @@ float Average_Data(float *samples, int len){
 }
 
 /**
- * @brief
+ * @brief prepares SLEEP_TIMER for use
  */
 void Initialize_Sleep_Timer(){
 	Chip_TIMER_Init(SLEEP_TIMER);								// Initialize TIMER0
@@ -96,6 +96,11 @@ void Initialize_Sleep_Timer(){
 	NVIC_EnableIRQ(SLEEP_TIMER_INTERRUPT_NVIC_NAME);
 }
 
+/**
+ * @brief Performs a median filter in-place on an array of data
+ * @param samples the input data
+ * @param len length of the array samples
+ */
 void Median_Filt(float* samples, int len){
 	if(len<3) return;
 	float temp[3];
@@ -118,6 +123,11 @@ void Median_Filt(float* samples, int len){
 	return;
 }
 
+/**
+ * @brief reads NUM_SAMPLES samples from from microphone mux_num
+ * @param mux_num the microphone to read from
+ * @return float the average microphone power across NUM_SAMPLES samples
+ */
 float Read_Mic_Samples(uint8_t mux_num){
 	static uint8_t last_mux_num = -1;
 	int8_t* Sample_Data;
@@ -140,6 +150,10 @@ float Read_Mic_Samples(uint8_t mux_num){
 	return sample_avg*MIC_SCALARS[mux_num];
 }
 
+/**
+ * @brief Changes wheel directions and powers to match direction enum dir
+ * @param dir the new direction enum
+ */
 void Update_Motor_Direction(int dir){
 	static int recent_direction = NONE;
 	if (dir == FRONT){
@@ -151,19 +165,21 @@ void Update_Motor_Direction(int dir){
 		set_motor(MOTOR_RIGHT, MOTOR_SPEED_MAX, MOTOR_BACKWARD);
 	}
 	else if (dir == LEFT){
-		set_motor(MOTOR_LEFT, MOTOR_SPEED_TURN, MOTOR_FORWARD);
+		set_motor(MOTOR_LEFT, MOTOR_SPEED_TURN, MOTOR_BACKWARD);
 		set_motor(MOTOR_RIGHT, MOTOR_SPEED_MAX, MOTOR_FORWARD);
 
 	}
 	else if (dir == RIGHT){
 		set_motor(MOTOR_LEFT, MOTOR_SPEED_MAX, MOTOR_FORWARD);
-		set_motor(MOTOR_RIGHT, MOTOR_SPEED_TURN, MOTOR_FORWARD);
+		set_motor(MOTOR_RIGHT, MOTOR_SPEED_TURN, MOTOR_BACKWARD);
 
 	}
 }
 
-
-
+/**
+ * @brief Reads NUM_MIC_READ_ITERATIONS * NUM_SAMPLES samples from mic mux_num, then median filters and returns average power.
+ * @param mux_num microphone to read from
+ */
 float Read_Mic(uint8_t mux_num){
 	int iter;
 	float samples[NUM_MIC_READ_ITERATIONS] = {0};
@@ -174,6 +190,10 @@ float Read_Mic(uint8_t mux_num){
 	return Average_Data(samples, NUM_MIC_READ_ITERATIONS);
 }
 
+/**
+ * @brief Reads each mic in order until detecting the beginning of a word, then reads that and four samples and returns.
+ * @param ret_mic_vals the array into which to write the NUM_MICS average powers.
+ */
 void Ping_Mics(float* ret_mic_vals){
 	bool is_found = false;
 	uint8_t mic_order[NUM_MICS] = {FRONT, BACK, LEFT, RIGHT};
@@ -194,7 +214,14 @@ void Ping_Mics(float* ret_mic_vals){
 
 }
 
-int Get_Direction(float *mic_vals){
+/**
+ * @brief Given the average power of NUM_MICS mics, updates the motor direction and power states
+ * @param mic_vals array of NUM_MICS power values
+ */
+void Get_Direction(float *mic_vals){
+// This function updates the motor pwm values depending on 4 mic values passed in.
+// There are sleep timers set to prevent echoes (fb/lr_sleep_temp and FB/LR_Sleep)
+// Direction counter makes sure all directions are called more than once
 	bool fb_sleep_temp = false;
 	bool lr_sleep_temp = false;
 	static int Direction_Counter[NUM_MICS] = {0};
@@ -258,12 +285,12 @@ int Get_Direction(float *mic_vals){
 		Chip_TIMER_Reset(SLEEP_TIMER);
 		Chip_TIMER_Enable(SLEEP_TIMER);
 	}
-
-
-	return 0;
 }
 
-
+/**
+ * @brief program entry point
+ * @return program exit code
+ */
 int main(){
 //	printf("Killing it....\r\n");
 
@@ -274,16 +301,10 @@ int main(){
 	Update_Motor_Direction(NONE);
 	Motor_Enable();
 
-	bool is_turning = false;
-	bool is_on = true;
-
-	while (is_on){
+	while (true){
 		float mic_vals[NUM_MICS] = {0};
 		Ping_Mics(mic_vals);
 		Get_Direction(mic_vals);
-
-
-
 	}
 
 	return 0;
