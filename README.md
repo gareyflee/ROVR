@@ -25,3 +25,4 @@ Continuously:
 		if processed mic sample value > opposite processed mic sample value * scalar
 			and if two same directions in row (w/out opposite direction)
 				update direction according to appropriate processed mic sample value
+ 
