@@ -70,8 +70,9 @@ float Read_Mic(uint8_t mux_num){
 	return sample_avg;
 }
 
-#define FLT_MAX 3.0e+36F 
-#define FLT_MIN 1.0e-36F 
+/*
+#define FLT_MAX 3.0e+36F
+#define FLT_MIN 1.0e-36F
 float* Median_Arr(float* samples){
 	int i, j, k;
 	float retArr[sizeof(samples)];
@@ -99,8 +100,30 @@ float* Median_Arr(float* samples){
 		}
 	}
 	return retArr;
-	
+}*/
+
+void Median_Filt(float* samples, int len){
+	if(len<3) return;
+	float temp[3];
+	temp[0] = samples[0];
+	temp[1] = samples[1];
+
+	unsigned i=0;
+	for(i=1;i<len-1;++i){
+		temp[2] = samples[i+1];
+		if((temp[1]<temp[0] && temp[0]<temp[2]) || (temp[1]>temp[0] && temp[0] > temp[2])){
+			samples[i]=temp[0];
+		}else if((temp[1]<temp[2] && temp[2] < temp[0]) || (temp[1]>temp[2]&&temp[2]>temp[0])){
+			samples[i]=temp[2];
+		}else{
+			samples[i]=temp[1];
+		}
+		temp[0]=temp[1];
+		temp[1]=temp[2];
+	}
+	return;
 }
+
 
 void Add_Circle_Buffer(float* new_data, int mux_num){
 //	Only valid for NUM_SAMPLE_HISTORY of 2
@@ -212,16 +235,16 @@ void updateMotors(){
 // #define JUST_FORWARD_DEBUG
 
 int main(){
-	
-	float Test[] = {5.0, 1.0, 2.0, 3.5, 8.0};
-	Test = Median_Arr(*Test);
+
+	/*float Test[] = {5.0, 1.0, 2.0, 3.5, 8.0};
+	Median_Arr(Test);
 	int i;
 	for (i=0; i < 5; i++)
-		printf("%f ", Test[i]);
-	return 0;
-	
-	
-	
+		printf("%f ", Catch[i]);
+	return 0;*/
+
+
+
 	memset(Samples, 0.0, sizeof(Samples));
 	Initialize_Board();
 	Initialize_Motor();
