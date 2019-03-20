@@ -8,6 +8,7 @@ void Initialize_Motor(){
 
 	uint8_t MOTOR_ID;
 	for(MOTOR_ID = 0;MOTOR_ID < NUM_MOTORS;++MOTOR_ID){
+		// Enable GPIO for motor direction pins
 		Chip_GPIO_WriteDirBit(LPC_GPIO, M_PORTS[MOTOR_ID*2], M_PINS[MOTOR_ID*2], true);
 		Chip_GPIO_WritePortBit(LPC_GPIO, M_PORTS[MOTOR_ID*2], M_PINS[MOTOR_ID*2], true);
 		Chip_GPIO_WriteDirBit(LPC_GPIO, M_PORTS[MOTOR_ID*2+1], M_PINS[MOTOR_ID*2+1], true);
