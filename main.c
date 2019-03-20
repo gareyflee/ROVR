@@ -1,4 +1,3 @@
-
 #include "board.h"
 #include "chip.h"
 #include "i2cadc.h"
@@ -268,4 +267,3 @@ int main(){
 
 	return 0;
 }
-
